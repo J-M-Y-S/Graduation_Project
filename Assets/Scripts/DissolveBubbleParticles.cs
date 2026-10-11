@@ -83,7 +83,8 @@ public class DissolveBubbleParticles : MonoBehaviour
         main.startLifetime = bubbleLifetime;
         main.maxParticles = 3000;
 
-        ps.emission.enabled = false;
+        var emission = ps.emission;
+        emission.enabled = false;
 
         var fade = ps.colorOverLifetime;
         fade.enabled = true;
@@ -103,15 +104,20 @@ public class DissolveBubbleParticles : MonoBehaviour
 
     Texture2D BubbleTexture()
     {
-        int n = 32;
+        int n = 64;
         var tex = new Texture2D(n, n, TextureFormat.RGBA32, false);
+        tex.wrapMode = TextureWrapMode.Clamp;
+
+        float r = n * 0.5f;
+        var center = new Vector2(r, r);
 
         for (int y = 0; y < n; y++)
         {
             for (int x = 0; x < n; x++)
             {
-                float d = Vector2.Distance(new Vector2(x, y), new Vector2(n / 2f, n / 2f)) / (n / 2f);
-                tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(1f - d)));
+                float d = Vector2.Distance(new Vector2(x + 0.5f, y + 0.5f), center) / r;
+                float a = Mathf.Clamp01(1f - d) * 0.3f + Mathf.Clamp01(1f - Mathf.Abs(d - 0.78f) * 7f);
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(a)));
             }
         }
 
