@@ -1,0 +1,44 @@
+# ---------------------------------------------------------------------------
+# 换行符与文件类型属性规则
+#
+# 生效方式见同目录 README.md。
+# ---------------------------------------------------------------------------
+
+# 全仓库统一使用 LF：索引与工作区一致，跨平台 diff 干净、无换行符抖动
+* text=auto eol=lf
+
+# Unity 的 YAML 资源文件统一使用 LF，保证 diff 干净、可读
+*.meta        text eol=lf
+*.unity       text eol=lf
+*.prefab      text eol=lf
+*.asset       text eol=lf
+*.mat         text eol=lf
+*.anim        text eol=lf
+*.controller  text eol=lf
+*.overrideController text eol=lf
+*.physicMaterial     text eol=lf
+*.physicsMaterial2D  text eol=lf
+*.preset      text eol=lf
+
+# C# 源码
+*.cs    text diff=csharp
+
+# 二进制资源，禁止 Git 做换行转换与文本 diff
+*.fbx   binary
+*.FBX   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.tga   binary
+*.psd   binary
+*.exr   binary
+*.hdr   binary
+*.dll   binary
+*.so    binary
+*.dylib binary
+*.wav   binary
+*.mp3   binary
+*.ogg   binary
+*.ttf   binary
+*.otf   binary
+*.blend binary
