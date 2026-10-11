@@ -547,8 +547,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
+      propertyPath: m_LocalScale.x
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
+        type: 3}
+      propertyPath: m_LocalScale.y
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
+        type: 3}
+      propertyPath: m_LocalScale.z
+      value: 0.1
+      objectReference: {fileID: 0}
+    - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
+        type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: -2.175
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
@@ -558,12 +573,12 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 0.773
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
       propertyPath: m_LocalRotation.w
-      value: 1
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
@@ -573,7 +588,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
       propertyPath: m_LocalRotation.y
-      value: 0
+      value: 0.7071068
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
@@ -588,7 +603,7 @@ PrefabInstance:
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
       propertyPath: m_LocalEulerAnglesHint.y
-      value: 0
+      value: 90
       objectReference: {fileID: 0}
     - target: {fileID: -8679921383154817045, guid: b2272b2692f14c24780ec0030ceca9a9,
         type: 3}
@@ -599,6 +614,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: "\u5B9E\u9A8C\u53F0"
+      objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: b2272b2692f14c24780ec0030ceca9a9,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
@@ -882,7 +902,7 @@ Transform:
   m_GameObject: {fileID: 351310794}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 2.752}
+  m_LocalPosition: {x: 1.817, y: 0, z: -0.525}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -5269,7 +5289,7 @@ GameObject:
   - component: {fileID: 1961591942}
   - component: {fileID: 1961591941}
   - component: {fileID: 1961591946}
-  - component: {fileID: 1961591945}
+  - component: {fileID: 1961591947}
   m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
@@ -5363,26 +5383,6 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1961591945
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1961591940}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 0e9a29d4c906f8649b4630db849af498, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  dissolveProperty: _ClipRate
-  bubblesPerDissolve: 320
-  bubbleColor: {r: 0.62, g: 0.85, b: 1, a: 1}
-  bubbleSizeMin: 0.04
-  bubbleSizeMax: 0.16
-  bubbleLifetime: 1.8
-  bubbleSpeed: 1.2
-  spread: 0.6
 --- !u!114 &1961591946
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5395,12 +5395,28 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3713872de2249624581b1863948a8a66, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  dissolveProperty: _ClipRate
   dissolveDuration: 3
   triggerKey: 32
   resetKey: 114
-  disableRendererWhenDone: 1
-  disableCollidersWhenDone: 1
+--- !u!114 &1961591947
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1961591940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0e9a29d4c906f8649b4630db849af498, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  bubblesPerDissolve: 320
+  bubbleColor: {r: 0.62, g: 0.85, b: 1, a: 1}
+  bubbleSizeMin: 0.04
+  bubbleSizeMax: 0.16
+  bubbleLifetime: 1.8
+  bubbleSpeed: 1.2
+  spread: 0.6
 --- !u!1 &1973606360
 GameObject:
   m_ObjectHideFlags: 0

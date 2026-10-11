@@ -93,8 +93,15 @@ public class DissolveBubbleParticles : MonoBehaviour
             alphaKeys = new[] { new GradientAlphaKey(1f, 0f), new GradientAlphaKey(0f, 1f) }
         });
 
+        var grow = ps.sizeOverLifetime;
+        grow.enabled = true;
+        grow.size = new ParticleSystem.MinMaxCurve(1f, new AnimationCurve(
+            new Keyframe(0f, 0.45f),
+            new Keyframe(0.3f, 1f),
+            new Keyframe(1f, 1.45f)));
+
         var pr = go.GetComponent<ParticleSystemRenderer>();
-        pr.sharedMaterial = new Material(Shader.Find("Universal Render Pipeline/Particles/Unlit"))
+        pr.sharedMaterial = new Material(Shader.Find("Sprites/Default"))
         {
             mainTexture = BubbleTexture()
         };
