@@ -15,20 +15,22 @@ namespace InstrumentAnimation
 
         [Header("Paddles")]
         public Transform[] paddles;
-        public float paddleSpeed = 100f;
+        public float speedAB = 50f;   // rpm
+        public float speedCD = 50f;   // rpm
         private bool _paddlesRunning = false;
 
         private Coroutine _headMove;
 
         void Update()
         {
-            if (_paddlesRunning && paddles != null)
+            if (!_paddlesRunning || paddles == null) return;
+            for (int i = 0; i < paddles.Length; i++)
             {
-                foreach (var p in paddles)
-                {
-                    if (p != null)
-                        p.Rotate(0f, paddleSpeed * Time.deltaTime, 0f, Space.Self);
-                }
+                var p = paddles[i];
+                if (p == null) continue;
+                float rpm = i < 2 ? speedAB : speedCD; // 前两个为 AB 杯，后两个为 CD 杯
+                if (rpm <= 0.01f) continue;
+                p.Rotate(0f, rpm * 6f * Time.deltaTime, 0f, Space.World); // rpm -> 度/秒
             }
         }
 
@@ -74,29 +76,37 @@ namespace InstrumentAnimation
 
         public void StartDissolution()
         {
-            HeadDown();
-            StartPaddles();
+            if (DissolutionExperiment.Instance != null) DissolutionExperiment.Instance.StartRun();
+            else { HeadDown(); StartPaddles(); }
         }
 
         public void StopDissolution()
         {
-            StopPaddles();
+            if (DissolutionExperiment.Instance != null) DissolutionExperiment.Instance.StopRun();
+            else StopPaddles();
+        }
+
+        /// <summary>机头是否已下降到位。</summary>
+        public bool IsHeadDown()
+        {
+            if (headGroup == null) return true;
+            return Mathf.Abs(headGroup.localPosition.y - headDownY) < 0.2f;
         }
 
         // 以下为参数面板接入的临时桩方法，具体逻辑由后续状态机实现。
         public void StartHeating()
         {
-            Debug.Log("开始加热（桩）");
+            if (DissolutionExperiment.Instance != null) DissolutionExperiment.Instance.StartHeating();
         }
 
         public void StopHeating()
         {
-            Debug.Log("停止加热（桩）");
+            if (DissolutionExperiment.Instance != null) DissolutionExperiment.Instance.StopHeating();
         }
 
         public void Print()
         {
-            Debug.Log("打印（桩）");
+            if (DissolutionExperiment.Instance != null) DissolutionExperiment.Instance.PrintReport();
         }
     }
 }
