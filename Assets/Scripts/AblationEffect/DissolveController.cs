@@ -1,10 +1,15 @@
+using System;
 using UnityEngine;
 
+/// <summary>
+/// 药片消融效果控制器（沿用原有 _ClipRate + 材质透明度效果）。
+/// 去掉键盘触发，改为由动画/状态机通过 StartDissolve / SetProgress / ResetDissolve 驱动。
+/// </summary>
 public class DissolveController : MonoBehaviour
 {
     public float dissolveDuration = 3f;
-    public KeyCode triggerKey = KeyCode.Space;
-    public KeyCode resetKey = KeyCode.R;
+
+    public event Action OnComplete;
 
     const string ClipRate = "_ClipRate";
 
@@ -12,6 +17,8 @@ public class DissolveController : MonoBehaviour
     Material mat;
     float progress;
     bool dissolving;
+
+    public float Progress => Mathf.Clamp01(progress);
 
     void Awake()
     {
@@ -26,25 +33,43 @@ public class DissolveController : MonoBehaviour
 
     void Update()
     {
-        if (Input.GetKeyDown(resetKey)) ResetDissolve();
-        if (Input.GetKeyDown(triggerKey)) dissolving = true;
         if (!dissolving) return;
-
         progress += Time.deltaTime / dissolveDuration;
-        mat.SetFloat(ClipRate, Mathf.Clamp01(progress));
-
+        ApplyProgress(progress);
         if (progress >= 1f)
         {
             dissolving = false;
-            rend.enabled = false;
+            ApplyProgress(1f);
+            OnComplete?.Invoke();
         }
     }
 
-    void ResetDissolve()
+    /// <summary>按时间自动溶解。</summary>
+    public void StartDissolve(float duration = -1f)
+    {
+        if (duration > 0f) dissolveDuration = duration;
+        dissolving = true;
+    }
+
+    /// <summary>直接设置溶解进度（0~1），用于跟随外部动画/模型。</summary>
+    public void SetProgress(float p)
     {
         dissolving = false;
-        progress = 0f;
-        mat.SetFloat(ClipRate, 0f);
-        rend.enabled = true;
+        ApplyProgress(p);
+    }
+
+    /// <summary>重置为未溶解。</summary>
+    public void ResetDissolve()
+    {
+        dissolving = false;
+        ApplyProgress(0f);
+        if (rend != null) rend.enabled = true;
+    }
+
+    void ApplyProgress(float p)
+    {
+        progress = Mathf.Clamp01(p);
+        if (mat != null) mat.SetFloat(ClipRate, progress);
+        if (rend != null) rend.enabled = progress < 1f;
     }
 }

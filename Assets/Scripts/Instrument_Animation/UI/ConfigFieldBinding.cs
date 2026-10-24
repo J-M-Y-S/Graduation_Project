@@ -44,6 +44,7 @@ namespace InstrumentAnimation
                 case ConfigField.InitialSpeedCD: cfg.SetInitialSpeed(1, v); break;
                 case ConfigField.EndSpeedCD: cfg.SetEndSpeed(1, v); break;
             }
+            ParameterValidator.ValidateSpeed(v);
         }
 
         public void SetFloatFromText(string s)
@@ -61,9 +62,11 @@ namespace InstrumentAnimation
             {
                 case ConfigField.TargetTemperature:
                     cfg.targetTemperature = Mathf.Clamp(v, 0f, 100f);
+                    ParameterValidator.ValidateTemperature(cfg.targetTemperature);
                     break;
                 case ConfigField.SampleTime:
                     cfg.SetSampleTime(cupIndex, slotIndex, v);
+                    ParameterValidator.ValidateSampleTimes(cfg.GetSampleTimes(cupIndex));
                     break;
             }
             RefreshValueText();
@@ -74,6 +77,7 @@ namespace InstrumentAnimation
             var cfg = ExperimentConfig.Instance;
             if (cfg == null) return;
             cfg.targetTemperature = Mathf.Clamp(cfg.targetTemperature + 0.1f, 0f, 100f);
+            ParameterValidator.ValidateTemperature(cfg.targetTemperature);
             RefreshValueText();
         }
 
@@ -82,6 +86,7 @@ namespace InstrumentAnimation
             var cfg = ExperimentConfig.Instance;
             if (cfg == null) return;
             cfg.targetTemperature = Mathf.Clamp(cfg.targetTemperature - 0.1f, 0f, 100f);
+            ParameterValidator.ValidateTemperature(cfg.targetTemperature);
             RefreshValueText();
         }
 
