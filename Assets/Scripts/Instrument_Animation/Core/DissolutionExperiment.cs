@@ -78,7 +78,8 @@ namespace InstrumentAnimation
             var cup = cups[cupIndex];
             if (cup.hasWater) { Toast.Display("杯中有水，请先倒水"); return; }
             cup.hasWater = true;
-            cup.currentTemperature = 26f;
+            var cfg = ExperimentConfig.Instance;
+            cup.currentTemperature = cfg != null ? cfg.currentTemperature : 26f;
             if (waterLevels[cupIndex] != null) waterLevels[cupIndex].Fill();
             Toast.Display("已向溶杯 " + cup.cupName + " 加水");
         }
@@ -89,6 +90,7 @@ namespace InstrumentAnimation
             if (!cup.hasWater) { Toast.Display("杯中无水"); return; }
             cup.hasWater = false;
             cup.tablet = null;
+            cup.dissolutionProgress = 0f;
             RemoveTabletVisual(cupIndex);
             if (waterLevels[cupIndex] != null) waterLevels[cupIndex].Pour();
             Toast.Display("已倒空溶杯 " + cup.cupName);
@@ -165,7 +167,7 @@ namespace InstrumentAnimation
             var cfg = ExperimentConfig.Instance;
             float start = cfg.currentTemperature;
             float delta = Mathf.Abs(target - start);
-            if (delta < 0.01f) { heatingProgress = 1f; _heating = null; yield break; }
+            if (delta < 0.01f) { SyncCupTemperatures(target); heatingProgress = 1f; _heating = null; yield break; }
             float duration = Mathf.Max(1f, delta / 2f);
             float t = 0f;
             heatingProgress = 0f;
@@ -174,10 +176,12 @@ namespace InstrumentAnimation
                 t += Time.deltaTime;
                 float p = Mathf.Clamp01(t / duration);
                 cfg.currentTemperature = Mathf.Lerp(start, target, p);
+                SyncCupTemperatures(cfg.currentTemperature);
                 heatingProgress = p;
                 yield return null;
             }
             cfg.currentTemperature = target;
+            SyncCupTemperatures(target);
             heatingProgress = 1f;
             _heating = null;
             ParameterValidator.ValidateTemperature(target);
@@ -185,6 +189,12 @@ namespace InstrumentAnimation
         }
 
         // ---------------- 运行 / 停止 ----------------
+        void SyncCupTemperatures(float temperature)
+        {
+            foreach (var cup in cups)
+                if (cup != null && cup.hasWater) cup.currentTemperature = temperature;
+        }
+
         public void StartRun()
         {
             if (IsRunning) return;
@@ -202,10 +212,10 @@ namespace InstrumentAnimation
                 _tester.speedCD = CurrentSpeedCD;
                 _tester.StartPaddles();
             }
-            // 开始运行后才让杯内药片消融
+            // 重置视觉进度，由溶出模型统一驱动药片消融和曲线。
             if (tabletVisuals != null)
                 for (int i = 0; i < tabletVisuals.Length; i++)
-                    if (tabletVisuals[i] != null) tabletVisuals[i].StartDissolve();
+                    if (tabletVisuals[i] != null) tabletVisuals[i].ResetTablet();
             _run = StartCoroutine(RunRoutine());
         }
 
@@ -230,6 +240,7 @@ namespace InstrumentAnimation
             }
             IsRunning = false;
             if (_run != null) { StopCoroutine(_run); _run = null; }
+            FeedCurve(RunTimeMinutes);
             if (_tester != null) _tester.StopPaddles();
         }
 
@@ -246,9 +257,10 @@ namespace InstrumentAnimation
             bool countingDown = false;
             float countdown = 0f;
             int lastBeepSecond = -1;
-            float lastCurveMinute = -1f;
+            float lastCurveMinute = 0f;
 
             if (CurveScreenController.Instance != null) CurveScreenController.Instance.ClearCurve();
+            FeedCurve(0f);
 
             while (IsRunning)
             {
@@ -286,7 +298,7 @@ namespace InstrumentAnimation
                     }
                 }
 
-                float whole = Mathf.Floor(RunTimeMinutes);
+                float whole = Mathf.Floor(RunTimeMinutes * 4f) / 4f;
                 if (whole != lastCurveMinute)
                 {
                     lastCurveMinute = whole;
@@ -351,7 +363,6 @@ namespace InstrumentAnimation
         void FeedCurve(float t)
         {
             var curve = CurveScreenController.Instance;
-            if (curve == null) return;
             for (int i = 0; i < 4; i++)
             {
                 var cup = cups[i];
@@ -359,7 +370,9 @@ namespace InstrumentAnimation
                 int rpm = i < 2 ? CurrentSpeedAB : CurrentSpeedCD;
                 float q = DissolutionModel.PercentAt(cup, t, rpm);
                 cup.dissolutionProgress = q / 100f;
-                curve.AddCupPoint(i, t, q);
+                if (tabletVisuals != null && i < tabletVisuals.Length && tabletVisuals[i] != null)
+                    tabletVisuals[i].SetProgress(cup.dissolutionProgress);
+                if (curve != null) curve.AddCupPoint(i, t, q);
             }
         }
 
@@ -372,24 +385,31 @@ namespace InstrumentAnimation
             if (col != null) Destroy(col);
 
             var cupT = cupTransforms != null && cupIndex < cupTransforms.Length ? cupTransforms[cupIndex] : null;
+            var apparatus = cupT != null ? cupT.GetComponentInParent<DissolutionTesterController>() : null;
+            float visualScale = apparatus != null ? Mathf.Abs(apparatus.transform.lossyScale.x) : 1f;
             if (cupT != null)
             {
                 var cr = cupT.GetComponent<Renderer>();
                 if (cr != null)
                 {
                     var b = cr.bounds;
-                    go.transform.position = new Vector3(b.center.x, b.min.y + 0.7f, b.center.z);
+                    go.transform.position = new Vector3(b.center.x, b.min.y + 0.7f * visualScale, b.center.z);
                 }
                 else go.transform.position = cupT.position;
             }
             else go.transform.position = transform.position + Vector3.down;
 
-            go.transform.localScale = Vector3.one * 0.45f;
+            go.transform.localScale = Vector3.one * (0.45f * visualScale);
+            if (apparatus != null) go.transform.SetParent(apparatus.transform, true);
             var rend = go.GetComponent<Renderer>();
             if (dissolveMaterial != null) rend.sharedMaterial = dissolveMaterial;
 
             var dc = go.AddComponent<DissolveController>();
-            go.AddComponent<DissolveBubbleParticles>();
+            var bubbles = go.AddComponent<DissolveBubbleParticles>();
+            bubbles.bubbleSizeMin *= visualScale;
+            bubbles.bubbleSizeMax *= visualScale;
+            bubbles.bubbleSpeed *= visualScale;
+            bubbles.spread *= visualScale;
 
             // 用纯色贴图保留药片本身颜色（消融材质的主色来自 _MainTex）
             var tablet = cups[cupIndex].tablet;
@@ -397,6 +417,11 @@ namespace InstrumentAnimation
             var inst = rend.material;
             if (inst.HasProperty("_MainTex"))
                 inst.SetTexture("_MainTex", MakeSolidTexture(color));
+            // 这些贴图在消融着色器中默认是白色，会让药片呈现金属反射和白色自发光。
+            if (inst.HasProperty("_Metallic"))
+                inst.SetTexture("_Metallic", Texture2D.blackTexture);
+            if (inst.HasProperty("_Emission"))
+                inst.SetTexture("_Emission", Texture2D.blackTexture);
 
             var td = go.AddComponent<TabletDissolver>();
             td.cupIndex = cupIndex;
